@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Трекер бессознательного</title>
+  <!-- 
+    Трекер бессознательного
+    © 2025 Новак Александр Александрович. Все права защищены.
+    Приложение для психологического анализа мыслей
+  -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#00d4aa">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Трекер бессознательного">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="confetti" class="confetti"></div>
+  <nav class="navbar">
+    <span class="logo">Трекер бессознательного</span>
+    <div class="navbar-buttons">
+      <button id="nav-main" class="nav-btn">Главная</button>
+      <button id="nav-profile" class="nav-btn">Профиль</button>
+      <button id="nav-guide" class="nav-btn">Справочник</button>
+      <button id="nav-stats" class="nav-btn">Статистика</button>
+      <button id="nav-feedback" class="nav-btn">Обратная связь</button>
+    </div>
+  </nav>
+  <main>
+    <section id="main-page" class="page active">
+      <div class="main-logo">
+        <svg width="60" height="60" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- Определение градиентов и эффектов -->
+          <defs>
+            <radialGradient id="nodeGradient" cx="0.3" cy="0.3" r="0.8">
+              <stop offset="0%" style="stop-color:#00f4cc;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#00d4aa;stop-opacity:1"/>
+            </radialGradient>
+            
+            <!-- Градиент для активных связей -->
+            <linearGradient id="connectionGradient">
+              <stop offset="0%" style="stop-color:#00d4aa;stop-opacity:0.3"/>
+              <stop offset="50%" style="stop-color:#00f4cc;stop-opacity:1"/>
+              <stop offset="100%" style="stop-color:#00d4aa;stop-opacity:0.3"/>
+            </linearGradient>
+          </defs>
+          
+          <!-- Связи между нейронами (линии) -->
+          <!-- Первый слой ко второму -->
+          <line x1="25" y1="35" x2="50" y2="25" stroke="url(#connectionGradient)" stroke-width="2" opacity="0.7">
+            <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2s" repeatCount="indefinite"/>
+          </line>
+          <line x1="25" y1="35" x2="50" y2="50" stroke="url(#connectionGradient)" stroke-width="2" opacity="0.7">
+            <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2s" repeatCount="indefinite" begin="0.5s"/>
+          </line>
+          <line x1="25" y1="65" x2="50" y2="50" stroke="url(#connectionGradient)" stroke-width="2" opacity="0.7">
+            <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2s" repeatCount="indefinite" begin="1s"/>
+          </line>
+          <line x1="25" y1="65" x2="50" y2="75" stroke="url(#connectionGradient)" stroke-width="2" opacity="0.7">
+            <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2s" repeatCount="indefinite" begin="1.5s"/>
+          </line>
+          
+          <!-- Второй слой к третьему -->
+          <line x1="50" y1="25" x2="75" y2="35" stroke="url(#connectionGradient)" stroke-width="2" opacity="0.7">
+            <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2s" repeatCount="indefinite" begin="0.3s"/>
+          </line>
+          <line x1="50" y1="50" x2="75" y2="35" stroke="url(#connectionGradient)" stroke-width="2" opacity="0.7">
+            <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2s" repeatCount="indefinite" begin="0.8s"/>
+          </line>
+          <line x1="50" y1="50" x2="75" y2="65" stroke="url(#connectionGradient)" stroke-width="2" opacity="0.7">
+            <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2s" repeatCount="indefinite" begin="1.3s"/>
+          </line>
+          <line x1="50" y1="75" x2="75" y2="65" stroke="url(#connectionGradient)" stroke-width="2" opacity="0.7">
+            <animate attributeName="opacity" values="0.3;0.9;0.3" dur="2s" repeatCount="indefinite" begin="1.8s"/>
+          </line>
+          
+          <!-- Нейроны (узлы) - Входной слой -->
+          <circle cx="25" cy="35" r="4" fill="url(#nodeGradient)" stroke="#00a888" stroke-width="1">
+            <animate attributeName="r" values="4;5;4" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="25" cy="65" r="4" fill="url(#nodeGradient)" stroke="#00a888" stroke-width="1">
+            <animate attributeName="r" values="4;5;4" dur="3s" repeatCount="indefinite" begin="0.5s"/>
+          </circle>
+          
+          <!-- Скрытый слой -->
+          <circle cx="50" cy="25" r="4" fill="url(#nodeGradient)" stroke="#00a888" stroke-width="1">
+            <animate attributeName="r" values="4;5;4" dur="3s" repeatCount="indefinite" begin="1s"/>
+          </circle>
+          <circle cx="50" cy="50" r="5" fill="url(#nodeGradient)" stroke="#00a888" stroke-width="1.5">
+            <animate attributeName="r" values="5;6.5;5" dur="3s" repeatCount="indefinite" begin="1.5s"/>
+          </circle>
+          <circle cx="50" cy="75" r="4" fill="url(#nodeGradient)" stroke="#00a888" stroke-width="1">
+            <animate attributeName="r" values="4;5;4" dur="3s" repeatCount="indefinite" begin="2s"/>
+          </circle>
+          
+          <!-- Выходной слой -->
+          <circle cx="75" cy="35" r="4" fill="url(#nodeGradient)" stroke="#00a888" stroke-width="1">
+            <animate attributeName="r" values="4;5;4" dur="3s" repeatCount="indefinite" begin="2.5s"/>
+          </circle>
+          <circle cx="75" cy="65" r="4" fill="url(#nodeGradient)" stroke="#00a888" stroke-width="1">
+            <animate attributeName="r" values="4;5;4" dur="3s" repeatCount="indefinite" begin="3s"/>
+          </circle>
+          
+          <!-- Центральный "мозговой" узел -->
+          <circle cx="50" cy="50" r="2" fill="#00f4cc" opacity="0.8">
+            <animate attributeName="opacity" values="0.5;1;0.5" dur="1.5s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+      </div>
+      <div class="main-content-center">
+        <h1 class="main-title">Работа с<br>бессознательным</h1>
+        <p class="main-subtitle">Каждая мысль — шаг к осознанности</p>
+        <button id="add-thought-btn" class="main-cta-btn">
+          ЗАФИКСИРОВАТЬ<br>НЕГАТИВНУЮ МЫСЛЬ
+        </button>
+      </div>
+    </section>
+    <section id="form-page" class="page">
+      <h2>Опишите вашу мысль</h2>
+      <div class="thought-form">
+        <label>Ситуация
+          <textarea id="situation-input" placeholder="Опишите ситуацию (например: разговор с коллегой, просмотр новостей)" rows="2"></textarea>
+        </label>
+        <label>Негативная мысль
+          <textarea id="thought-input" placeholder="Какая мысль возникла? (например: я не справлюсь, меня не понимают)" rows="2"></textarea>
+        </label>
+        <label>Чувство
+          <select id="feeling-input">
+            <option value="">Выберите чувство...</option>
+            <option>Тревога</option>
+            <option>Грусть</option>
+            <option>Злость</option>
+            <option>Страх</option>
+            <option>Стыд</option>
+            <option>Вина</option>
+            <option>Раздражение</option>
+            <option>Другое</option>
+          </select>
+        </label>
+      </div>
+      <div class="form-actions">
+        <button id="save-thought-btn" class="big-btn">Сохранить</button>
+        <button id="cancel-form-btn" class="nav-btn">Отмена</button>
+      </div>
+    </section>
+    <section id="stats-page" class="page">
+      <div class="stats-container">
+        <!-- ЗАГОЛОВОК И ФИЛЬТРЫ -->
+        <div class="stats-header">
+          <h1 class="stats-title">Анализ мыслей</h1>
+          <div class="period-controls">
+            <div class="period-buttons">
+              <button class="period-btn" data-period="today">Сегодня</button>
+              <button class="period-btn" data-period="3">3 дня</button>
+              <button class="period-btn active" data-period="7">7 дней</button>
+              <button class="period-btn" data-period="14">14 дней</button>
+              <button class="period-btn" data-period="30">30 дней</button>
+            </div>
+            <div class="custom-period">
+              <div class="date-inputs-row">
+                <span>с</span>
+                <input type="date" class="date-input" id="start-date">
+                <span>—</span>
+                <input type="date" class="date-input" id="end-date">
+              </div>
+              <button class="show-btn" id="show-period-btn">Показать период</button>
+            </div>
+          </div>
+        </div>
+        <!-- ОСНОВНОЙ КОНТЕНТ -->
+        <div class="stats-main">
+          <!-- ЛЕВАЯ КОЛОНКА -->
+          <div class="stats-left">
+            <!-- ГРАФИК -->
+            <div class="chart-container">
+              <div class="chart-header">
+                <h3 class="chart-title">Динамика по дням</h3>
+                <span class="chart-info">Количество негативных мыслей</span>
+              </div>
+              <canvas id="stats-chart"></canvas>
+            </div>
+            <!-- МЕТРИКИ -->
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-icon">🧠</div>
+                <div class="metric-value" id="metric-thoughts">0</div>
+                <div class="metric-label">Всего мыслей</div>
+                <div class="metric-trend trend-neutral" id="metric-dynamic">0</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon">📊</div>
+                <div class="metric-value" id="metric-period">0 дней</div>
+                <div class="metric-label">За период</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon">🎯</div>
+                <div class="metric-value" id="metric-best">0 мыслей</div>
+                <div class="metric-label">Лучший день</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon">⚠️</div>
+                <div class="metric-value" id="metric-worst">0 мыслей</div>
+                <div class="metric-label">Сложный день</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon">🧘</div>
+                <div class="metric-value" id="metric-awareness">0%</div>
+                <div class="metric-label">Осознанность</div>
+              </div>
+            </div>
+          </div>
+          <!-- ПРАВАЯ КОЛОНКА - ЗАПИСИ -->
+          <div class="entries-panel">
+            <div class="entries-header">
+              <h3 class="entries-title">Последние записи</h3>
+              <div class="entries-header-actions">
+                <div class="entries-count" id="entries-count">0</div>
+                <button id="export-data-btn" class="export-btn">
+                  <span class="export-icon">📊</span>
+                  <span class="export-text">Получить отчет</span>
+                </button>
+              </div>
+            </div>
+            <div class="entries-list" id="recent-list">
+              <!-- Записи будут добавляться динамически -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="guide-page" class="page">
+      <div class="guide-container">
+        
+        <!-- ЗАГОЛОВОК -->
+        <div class="guide-header">
+          <h1 class="guide-title">💡 Справочник по работе с мыслями</h1>
+          <p class="guide-subtitle">Научные основы для понимания себя</p>
+        </div>
+
+        <!-- НАВИГАЦИЯ ПО РАЗДЕЛАМ -->
+        <div class="guide-navigation">
+          <button class="guide-nav-btn active" data-section="ego-states">Эго-состояния</button>
+          <button class="guide-nav-btn" data-section="thoughts">Анатомия мыслей</button>
+          <button class="guide-nav-btn" data-section="emotions">Чувства</button>
+          <button class="guide-nav-btn" data-section="methodology">Методология</button>
+          <button class="guide-nav-btn" data-section="example-report">Пример отчета</button>
+        </div>
+
+        <!-- РАЗДЕЛ 1: ЭГО-СОСТОЯНИЯ -->
+        <div id="ego-states" class="guide-section active">
+          <div class="section-header">
+            <h2>🧠 Эго-состояния по Эрику Берну</h2>
+            <p>Каждый человек несет в себе три различных состояния "Я", которые влияют на наши мысли и реакции.</p>
+          </div>
+
+          <div class="ego-states-grid">
+            <div class="ego-state-card parent">
+              <div class="ego-icon">👨‍🏫</div>
+              <h3>Родитель</h3>
+              <p class="ego-description">Критикующий, контролирующий, заботящийся. Источник "должен", "нельзя", "правильно".</p>
+              <div class="ego-examples">
+                <h4>Типичные мысли:</h4>
+                <ul>
+                  <li>"Я должен работать больше"</li>
+                  <li>"Нельзя показывать слабость"</li>
+                  <li>"Все делают неправильно"</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="ego-state-card adult">
+              <div class="ego-icon">🤔</div>
+              <h3>Взрослый</h3>
+              <p class="ego-description">Анализирующий, рациональный, адаптивный. Обрабатывает информацию и принимает решения.</p>
+              <div class="ego-examples">
+                <h4>Типичные мысли:</h4>
+                <ul>
+                  <li>"Какие у меня варианты?"</li>
+                  <li>"Что говорят факты?"</li>
+                  <li>"Как лучше поступить?"</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="ego-state-card child">
+              <div class="ego-icon">🧒</div>
+              <h3>Ребенок</h3>
+              <p class="ego-description">Спонтанный, эмоциональный, творческий. Источник радости, но и страхов и обид.</p>
+              <div class="ego-examples">
+                <h4>Типичные мысли:</h4>
+                <ul>
+                  <li>"Меня не любят"</li>
+                  <li>"Хочу, чтобы было весело"</li>
+                  <li>"Я не справлюсь"</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="insight-box">
+            <h4>💡 Ключевой инсайт</h4>
+            <p>Негативные мысли чаще всего приходят из состояний <strong>Критикующего Родителя</strong> или <strong>Травмированного Ребенка</strong>. Цель — научиться включать <strong>Взрослого</strong> для анализа ситуации.</p>
+          </div>
+        </div>
+
+        <!-- РАЗДЕЛ 2: АНАТОМИЯ МЫСЛЕЙ -->
+        <div id="thoughts" class="guide-section">
+          <div class="section-header">
+            <h2>⚡ Как формируются негативные мысли</h2>
+            <p>Понимание механизма поможет лучше их отслеживать и анализировать.</p>
+          </div>
+
+          <div class="thought-process">
+            <div class="process-step">
+              <div class="step-number">1</div>
+              <div class="step-content">
+                <h3>Триггер (Ситуация)</h3>
+                <p>Внешнее событие активирует наши внутренние программы</p>
+                <div class="examples">Критика начальника, взгляд незнакомца, неудача в проекте</div>
+              </div>
+            </div>
+
+            <div class="process-arrow">→</div>
+
+            <div class="process-step">
+              <div class="step-number">2</div>
+              <div class="step-content">
+                <h3>Автоматическая мысль</h3>
+                <p>Мгновенная интерпретация события на основе прошлого опыта</p>
+                <div class="examples">"Я неудачник", "Меня не уважают", "Я не справлюсь"</div>
+              </div>
+            </div>
+
+            <div class="process-arrow">→</div>
+
+            <div class="process-step">
+              <div class="step-number">3</div>
+              <div class="step-content">
+                <h3>Эмоциональная реакция</h3>
+                <p>Чувства, которые возникают вслед за мыслью</p>
+                <div class="examples">Тревога, стыд, злость, грусть, вина</div>
+              </div>
+            </div>
+
+            <div class="process-arrow">→</div>
+
+            <div class="process-step">
+              <div class="step-number">4</div>
+              <div class="step-content">
+                <h3>Поведение</h3>
+                <p>Действия, которые мы совершаем под влиянием эмоций</p>
+                <div class="examples">Избегание, агрессия, самосаботаж, изоляция</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="insight-box">
+            <h4>🎯 Точка вмешательства</h4>
+            <p>Фиксируя мысли, мы создаем паузу между триггером и реакцией. Это позволяет <strong>Взрослому</strong> вмешаться и выбрать более адаптивный ответ.</p>
+          </div>
+        </div>
+
+        <!-- РАЗДЕЛ 3: ЧУВСТВА -->
+        <div id="emotions" class="guide-section">
+          <div class="section-header">
+            <h2>❤️ Понимание чувств</h2>
+            <p>Точное определение эмоций — ключ к пониманию своих реакций.</p>
+          </div>
+
+          <div class="emotions-grid">
+            <div class="emotion-category">
+              <h3>🔴 Базовые негативные эмоции</h3>
+              <div class="emotion-list">
+                <div class="emotion-item">
+                  <strong>Страх</strong> — "Что-то угрожает моей безопасности"
+                </div>
+                <div class="emotion-item">
+                  <strong>Злость</strong> — "Мои границы нарушены"
+                </div>
+                <div class="emotion-item">
+                  <strong>Грусть</strong> — "Я потерял что-то важное"
+                </div>
+                <div class="emotion-item">
+                  <strong>Стыд</strong> — "Со мной что-то не так"
+                </div>
+                <div class="emotion-item">
+                  <strong>Вина</strong> — "Я сделал что-то неправильно"
+                </div>
+              </div>
+            </div>
+
+            <div class="emotion-category">
+              <h3>🟡 Составные эмоции</h3>
+              <div class="emotion-list">
+                <div class="emotion-item">
+                  <strong>Тревога</strong> — страх + неопределенность
+                </div>
+                <div class="emotion-item">
+                  <strong>Раздражение</strong> — злость + усталость
+                </div>
+                <div class="emotion-item">
+                  <strong>Обида</strong> — грусть + злость
+                </div>
+                <div class="emotion-item">
+                  <strong>Зависть</strong> — злость + стыд
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="insight-box">
+            <h4>🔍 Зачем различать</h4>
+            <p>Чем точнее мы называем эмоцию, тем лучше понимаем свои потребности. <strong>Страх</strong> требует безопасности, <strong>злость</strong> — защиты границ, <strong>грусть</strong> — поддержки.</p>
+          </div>
+        </div>
+
+        <!-- РАЗДЕЛ 4: МЕТОДОЛОГИЯ -->
+        <div id="methodology" class="guide-section">
+          <div class="section-header">
+            <h2>📝 Как правильно фиксировать</h2>
+            <p>Качество записей определяет эффективность самоанализа.</p>
+          </div>
+
+          <div class="methodology-cards">
+            <div class="method-card">
+              <h3>📍 Ситуация</h3>
+              <div class="card-content">
+                <h4>Что записывать:</h4>
+                <ul>
+                  <li>Конкретные факты, а не интерпретации</li>
+                  <li>Место, время, участники</li>
+                  <li>Что именно произошло</li>
+                </ul>
+                <div class="example-box good">
+                  <h5>✅ Хорошо:</h5>
+                  <p>"Начальник сказал: 'Этот отчет нужно переделать'"</p>
+                </div>
+                <div class="example-box bad">
+                  <h5>❌ Плохо:</h5>
+                  <p>"Начальник меня критикует"</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="method-card">
+              <h3>💭 Мысль</h3>
+              <div class="card-content">
+                <h4>Что записывать:</h4>
+                <ul>
+                  <li>Первую мысль, которая пришла в голову</li>
+                  <li>Внутренний диалог</li>
+                  <li>Оценки и интерпретации</li>
+                </ul>
+                <div class="example-box good">
+                  <h5>✅ Хорошо:</h5>
+                  <p>"Я плохо работаю, меня скоро уволят"</p>
+                </div>
+                <div class="example-box bad">
+                  <h5>❌ Плохо:</h5>
+                  <p>"Мне было неприятно"</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="method-card">
+              <h3>😔 Чувство</h3>
+              <div class="card-content">
+                <h4>Что записывать:</h4>
+                <ul>
+                  <li>Базовую эмоцию одним словом</li>
+                  <li>Телесные ощущения</li>
+                  <li>Интенсивность (1-10)</li>
+                </ul>
+                <div class="example-box good">
+                  <h5>✅ Хорошо:</h5>
+                  <p>"Стыд, сжатие в груди"</p>
+                </div>
+                <div class="example-box bad">
+                  <h5>❌ Плохо:</h5>
+                  <p>"Расстроился"</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="insight-box">
+            <h4>📊 Что делать с данными</h4>
+            <p>Регулярно просматривайте записи в поисках <strong>паттернов</strong>: повторяющиеся ситуации, типы мыслей, эмоциональные реакции. Это поможет выявить ваши "болевые точки" и работать с ними целенаправленно.</p>
+          </div>
+
+          <div class="insight-box">
+            <h4>📊 Получение персонального отчета</h4>
+            <p>Для получения детального PDF-анализа ваших мыслей по методу транзактного анализа Эрика Берна перейдите в раздел <strong>Статистика</strong> и нажмите кнопку <strong>"Получить отчет"</strong> над списком записей. Отчет будет отправлен на указанный email в течение 2-3 минут.</p>
+          </div>
+        </div>
+
+        <!-- РАЗДЕЛ 5: ПРИМЕР ОТЧЕТА -->
+        <div id="example-report" class="guide-section">
+          <div class="section-header">
+            <h2>📊 Пример отчета</h2>
+            <p>Интерактивный пример PDF отчета с анализом паттернов мышления по транзактному анализу.</p>
+          </div>
+
+          <div class="report-preview">
+            <div class="report-header">
+              <h1 class="report-title">🧠 Анализ паттернов мышления</h1>
+              <p class="report-subtitle">Транзактный анализ на основе данных за 2025-07-08 — 2025-07-14</p>
+              
+              <div class="report-stats">
+                <div class="stat-item">
+                  <span class="stat-icon">📊</span>
+                  <span class="stat-value">12</span>
+                  <span class="stat-label">Записей</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-icon">📅</span>
+                  <span class="stat-value">5/7</span>
+                  <span class="stat-label">Активных дней</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-icon">😊</span>
+                  <span class="stat-value">Радость</span>
+                  <span class="stat-label">Доминирующее чувство</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-icon">🎯</span>
+                  <span class="stat-value">67%</span>
+                  <span class="stat-label">Осознанность</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="report-section">
+              <h2 class="section-heading">🔍 Ключевые инсайты</h2>
+              <div class="insights-grid">
+                <div class="insight-card">
+                  <h3>Основной паттерн</h3>
+                  <p>Стремление к саморазвитию и новым возможностям</p>
+                </div>
+                <div class="insight-card">
+                  <h3>Базовое убеждение</h3>
+                  <p>Я способен достигать поставленных целей через упорный труд</p>
+                </div>
+                <div class="insight-card">
+                  <h3>Сильные стороны</h3>
+                  <p>Оптимизм, Целеустремленность, Адаптивность</p>
+                </div>
+                <div class="insight-card">
+                  <h3>Точки роста</h3>
+                  <p>Управление ожиданиями, Баланс работы и отдыха</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="report-section">
+              <h2 class="section-heading">🎭 Анализ эго-состояний</h2>
+              <div class="ego-states-chart">
+                <div class="ego-state parent">
+                  <div class="ego-bar" style="width: 35%;">35%</div>
+                  <span class="ego-label">Родитель: Поддерживающий, заботливый</span>
+                </div>
+                <div class="ego-state adult">
+                  <div class="ego-bar" style="width: 45%;">45%</div>
+                  <span class="ego-label">Взрослый: Рациональный, решающий проблемы</span>
+                </div>
+                <div class="ego-state child">
+                  <div class="ego-bar" style="width: 20%;">20%</div>
+                  <span class="ego-label">Ребенок: Творческий, спонтанный</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="report-section">
+              <h2 class="section-heading">📈 Эмоциональные паттерны</h2>
+              <div class="emotions-grid">
+                <div class="emotion-tag positive">Радость (4)</div>
+                <div class="emotion-tag positive">Вдохновение (3)</div>
+                <div class="emotion-tag neutral">Спокойствие (2)</div>
+                <div class="emotion-tag neutral">Сосредоточенность (2)</div>
+                <div class="emotion-tag negative">Усталость (1)</div>
+              </div>
+              <p class="emotion-description">
+                <strong>Триггеры:</strong> Достижения в работе, общение с единомышленниками<br>
+                <strong>Циклы:</strong> Планирование → действие → достижение → удовлетворение
+              </p>
+            </div>
+
+            <div class="report-section">
+              <h2 class="section-heading">🎯 Жизненная позиция: Я ок, ты ок</h2>
+              <div class="life-position">
+                <p>Здоровая жизненная позиция, характеризующаяся взаимным уважением и конструктивным подходом к отношениям. Способствует личностному росту и гармоничным взаимодействиям.</p>
+              </div>
+            </div>
+
+            <div class="report-section">
+              <h2 class="section-heading">🎯 План работы</h2>
+              <div class="action-plan">
+                <div class="plan-category">
+                  <h3>💡 Краткосрочные</h3>
+                  <ul>
+                    <li>Поддерживать регулярную рефлексию</li>
+                    <li>Развивать навыки планирования времени</li>
+                  </ul>
+                </div>
+                <div class="plan-category">
+                  <h3>📈 Среднесрочные</h3>
+                  <ul>
+                    <li>Укреплять связи с поддерживающим окружением</li>
+                    <li>Изучать новые методы саморазвития</li>
+                  </ul>
+                </div>
+                <div class="plan-category">
+                  <h3>🎯 Долгосрочные</h3>
+                  <ul>
+                    <li>Развивать лидерские качества</li>
+                    <li>Создать систему наставничества для других</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div class="report-footer">
+              <p class="report-note">
+                <strong>💡 Заключение:</strong> Ваш анализ показывает здоровые паттерны мышления и высокий потенциал для дальнейшего роста. Продолжайте развивать свои сильные стороны и работать над балансом в жизни.
+              </p>
+            </div>
+          </div>
+
+          <div class="report-info">
+            <h3>🎯 Что включает отчет</h3>
+            <div class="feature-grid">
+              <div class="feature-item">
+                <span class="feature-icon">📊</span>
+                <div>
+                  <h4>Детальная статистика</h4>
+                  <p>Анализ активности, эмоций и паттернов</p>
+                </div>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">🎭</span>
+                <div>
+                  <h4>Анализ эго-состояний</h4>
+                  <p>Соотношение Родитель-Взрослый-Ребенок</p>
+                </div>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">🧠</span>
+                <div>
+                  <h4>Когнитивные паттерны</h4>
+                  <p>Выявление мыслительных привычек</p>
+                </div>
+              </div>
+              <div class="feature-item">
+                <span class="feature-icon">📈</span>
+                <div>
+                  <h4>План развития</h4>
+                  <p>Персональные рекомендации для роста</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+    <section id="profile-page" class="page">
+      <div class="profile-container">
+        <!-- ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ -->
+        <div class="profile-header">
+          <div class="profile-avatar" id="profile-avatar">
+            <div class="avatar-icon" id="avatar-icon">👤</div>
+            <img id="avatar-image" class="avatar-image" style="display: none;" alt="Аватар">
+            <div class="avatar-upload-overlay">
+              <span class="upload-icon">📷</span>
+            </div>
+            <input type="file" id="avatar-upload-input" accept="image/*" style="display: none;">
+          </div>
+          <div class="profile-info">
+            <h1 id="profile-name" class="profile-name">Загрузка...</h1>
+            <p id="profile-email" class="profile-email">user@example.com</p>
+            <p id="profile-join-date" class="profile-join-date">С нами с июля 2025</p>
+          </div>
+          <button id="edit-profile-btn" class="edit-profile-btn">⚙️</button>
+        </div>
+        <!-- СТАТИСТИКА -->
+        <div class="profile-stats">
+          <div class="stat-card">
+            <div class="stat-icon">📝</div>
+            <div class="stat-value" id="profile-total-entries">0</div>
+            <div class="stat-label">Всего записей</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-value" id="profile-current-streak">0</div>
+            <div class="stat-label">Текущий стрик</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🏆</div>
+            <div class="stat-value" id="profile-best-streak">0</div>
+            <div class="stat-label">Лучший стрик</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-value" id="profile-active-days">0</div>
+            <div class="stat-label">Активных дней</div>
+          </div>
+        </div>
+        <!-- ДОСТИЖЕНИЯ (базовые) -->
+        <div class="achievements-section">
+          <h2 class="section-title">🏆 Достижения</h2>
+          <div class="achievements-grid" id="achievements-grid">
+            <div class="achievement-card unlocked">
+              <div class="achievement-icon">🌱</div>
+              <div class="achievement-title">Первый шаг</div>
+              <div class="achievement-description">Зафиксировать первую мысль</div>
+            </div>
+            <div class="achievement-card locked">
+              <div class="achievement-icon">🔥</div>
+              <div class="achievement-title">Неделя силы</div>
+              <div class="achievement-description">7 дней подряд</div>
+            </div>
+            <div class="achievement-card locked">
+              <div class="achievement-icon">💎</div>
+              <div class="achievement-title">Месяц осознанности</div>
+              <div class="achievement-description">30 дней подряд</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- КАЛЕНДАРЬ АКТИВНОСТИ -->
+        <div class="activity-section">
+          <h2 class="section-title">📅 Календарь активности</h2>
+          <div class="calendar-widget">
+            <div class="calendar-controls">
+              <button id="profile-prev-month" class="month-nav-btn">‹</button>
+              <h3 id="profile-current-month" class="month-title">Июль 2025</h3>
+              <button id="profile-next-month" class="month-nav-btn">›</button>
+            </div>
+            <div class="calendar-grid">
+              <div class="weekdays">
+                <div class="weekday">Пн</div>
+                <div class="weekday">Вт</div>
+                <div class="weekday">Ср</div>
+                <div class="weekday">Чт</div>
+                <div class="weekday">Пт</div>
+                <div class="weekday">Сб</div>
+                <div class="weekday">Вс</div>
+              </div>
+              <div id="profile-calendar-days" class="calendar-days">
+                <!-- Дни будут генерироваться JavaScript -->
+              </div>
+            </div>
+          </div>
+          <!-- ЛЕГЕНДА КАЛЕНДАРЯ -->
+          <div class="calendar-legend">
+            <div class="legend-item">
+              <div class="legend-dot active"></div>
+              <span>День с записями</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot today"></div>
+              <span>Сегодня</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot empty"></div>
+              <span>Без записей</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <div id="thought-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Опишите вашу мысль</h2>
+        <button id="close-modal" class="close-btn">&times;</button>
+      </div>
+      <div class="thought-form">
+        <div class="form-group">
+          <label class="form-label">Ситуация</label>
+          <textarea 
+            id="modal-situation-input" 
+            class="form-textarea" 
+            placeholder="Опишите ситуацию (например: разговор с коллегой, просмотр новостей)"
+            rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Негативная мысль</label>
+          <textarea 
+            id="modal-thought-input" 
+            class="form-textarea" 
+            placeholder="Какая мысль возникла? (например: я не справлюсь, меня не понимают)"
+            rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Чувство</label>
+          <select id="modal-feeling-input" class="form-select">
+            <option value="">Выберите чувство...</option>
+            <option>Тревога</option>
+            <option>Грусть</option>
+            <option>Злость</option>
+            <option>Страх</option>
+            <option>Стыд</option>
+            <option>Вина</option>
+            <option>Раздражение</option>
+            <option>Другое</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" id="modal-save-btn" class="btn-primary">
+            Сохранить мысль
+          </button>
+          <button type="button" id="modal-cancel-btn" class="btn-secondary">
+            Отмена
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="success-notification" class="success-notification">
+    ✓ Мысль успешно зафиксирована!
+  </div>
+  
+  <!-- Модальное окно обратной связи -->
+  <div id="feedback-modal" class="modal-overlay">
+    <div class="modal-content feedback-modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">Обратная связь</h2>
+        <button id="close-feedback-modal" class="close-btn">&times;</button>
+      </div>
+      <div class="feedback-form-container">
+        <div style="width:100%;height:500px;" data-fillout-id="w2j4bBovq1us" data-fillout-embed-type="standard" data-fillout-inherit-parameters data-fillout-dynamic-resize></div>
+        <script src="https://server.fillout.com/embed/v1/"></script>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Модальное окно регистрации -->
+  <div id="registration-modal" class="modal-overlay registration-modal">
+    <div class="modal-content registration-content">
+      <div class="modal-header">
+        <h2 class="modal-title">👋 Добро пожаловать!</h2>
+        <p class="registration-subtitle">Расскажите немного о себе</p>
+      </div>
+      <div class="registration-form">
+        <div class="form-group">
+          <label class="form-label">Имя *</label>
+          <input type="text" id="reg-first-name" class="form-input" placeholder="Введите ваше имя" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Фамилия *</label>
+          <input type="text" id="reg-last-name" class="form-input" placeholder="Введите вашу фамилию" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email *</label>
+          <input type="email" id="reg-email" class="form-input" placeholder="your@email.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Телефон</label>
+          <input type="tel" id="reg-phone" class="form-input" placeholder="+7 (999) 123-45-67">
+        </div>
+        <div class="form-actions">
+          <button type="button" id="complete-registration-btn" class="btn-primary">
+            Начать путь к осознанности
+          </button>
+        </div>
+        <p class="registration-note">
+          * Обязательные поля. Ваши данные используются только для персонализации отчетов.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div id="edit-profile-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">⚙️ Редактирование профиля</h2>
+        <button id="close-edit-profile-modal" class="close-btn">&times;</button>
+      </div>
+      <div class="edit-profile-form">
+        <div class="form-group">
+          <label class="form-label">Имя *</label>
+          <input type="text" id="edit-first-name" class="form-input" placeholder="Введите ваше имя" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Фамилия *</label>
+          <input type="text" id="edit-last-name" class="form-input" placeholder="Введите вашу фамилию" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email *</label>
+          <input type="email" id="edit-email" class="form-input" placeholder="your@email.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Телефон</label>
+          <input type="tel" id="edit-phone" class="form-input" placeholder="+7 (999) 123-45-67">
+        </div>
+        <div class="form-actions">
+          <button type="button" id="save-profile-changes-btn" class="btn-primary">Сохранить изменения</button>
+          <button type="button" id="cancel-profile-edit-btn" class="btn-secondary">Отмена</button>
+        </div>
+        <p class="edit-profile-note">* Обязательные поля. Изменения вступят в силу сразу после сохранения.</p>
+      </div>
+    </div>
+  </div>
+  <script src="app.js"></script>
+  <script src="stats-period.js"></script>
+  <!-- Add avatar modal before </body> -->
+  <div id="avatar-modal" class="modal-overlay">
+    <div class="modal-content avatar-modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">📷 Фото профиля</h2>
+        <button id="close-avatar-modal" class="close-btn">&times;</button>
+      </div>
+      <div class="avatar-actions">
+        <!-- НОВЫЙ: Прямой input как кнопка -->
+        <label for="direct-avatar-input" class="file-input-label">
+          📤 Выбрать фото с устройства
+        </label>
+        <input type="file" id="direct-avatar-input" accept="image/*" class="file-input-styled">
+        <button id="remove-avatar-btn" class="btn-secondary" style="display: none;">
+          🗑️ Удалить фото
+        </button>
+      </div>
+      <div class="avatar-preview" id="avatar-preview" style="display: none;">
+        <img id="preview-image" alt="Предпросмотр">
+      </div>
+      <p class="avatar-note">
+        Выберите квадратное изображение до 2MB для лучшего результата
+      </p>
+    </div>
+  </div>
+  <!-- Модальное окно экспорта -->
+  <div id="export-modal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">📤 Экспорт данных</h2>
+        <button id="close-export-modal" class="close-btn">&times;</button>
+      </div>
+      <div class="export-form">
+        <div class="form-group">
+          <label class="form-label">Период экспорта</label>
+          <div class="export-period-info" id="export-period-info">
+            Текущий период: 7 дней  
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Отправить отчет на email</label>
+          <input type="email" id="export-email-input" class="form-input" placeholder="your@email.com">
+        </div>
+        <div class="form-actions">
+          <button id="generate-export-btn" class="btn-primary">
+            🤖 Отправить в анализ
+          </button>
+          <button id="cancel-export-btn" class="btn-secondary">
+            Отмена
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html> 
