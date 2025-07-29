@@ -129,4 +129,4 @@ This project is proprietary software. Unauthorized copying, distribution, or use
 
 ---
 
-**🇷🇺 Разработано в России** | **🇺🇸 Developed in Russia** 
+**🇰🇿 Разработано в Казахстане** | **🇰🇿 Developed in Kazakhstan** 
