@@ -2,79 +2,21 @@
   "name": "Трекер бессознательного",
   "short_name": "Трекер",
   "description": "Приложение для анализа негативных мыслей на основе транзактного анализа Эрика Берна",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#1a1d29",
   "theme_color": "#00d4aa",
   "orientation": "portrait-primary",
-  "scope": "/",
+  "scope": "./",
   "lang": "ru",
   "dir": "ltr",
   "categories": ["health", "productivity", "education"],
   "icons": [
     {
-      "src": "icons/icon-72x72.png",
-      "sizes": "72x72",
-      "type": "image/png",
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-96x96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-128x128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-144x144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-152x152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-384x384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "maskable any"
-    },
-    {
-      "src": "icons/icon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable any"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "screenshots/desktop-1.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Главная страница приложения"
-    },
-    {
-      "src": "screenshots/mobile-1.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "Мобильная версия главной страницы"
     }
   ],
   "shortcuts": [
@@ -82,11 +24,12 @@
       "name": "Добавить мысль",
       "short_name": "Добавить",
       "description": "Быстро добавить новую запись",
-      "url": "/?action=add",
+      "url": "./?action=add",
       "icons": [
         {
-          "src": "icons/shortcut-add.png",
-          "sizes": "96x96"
+          "src": "icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
         }
       ]
     },
@@ -94,11 +37,12 @@
       "name": "Статистика",
       "short_name": "Статистика",
       "description": "Просмотр статистики мыслей",
-      "url": "/?action=stats",
+      "url": "./?action=stats",
       "icons": [
         {
-          "src": "icons/shortcut-stats.png",
-          "sizes": "96x96"
+          "src": "icon.svg",
+          "sizes": "any",
+          "type": "image/svg+xml"
         }
       ]
     }
