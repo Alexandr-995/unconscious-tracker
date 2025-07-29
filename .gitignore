@@ -1,0 +1,41 @@
+# Системные файлы
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Логи
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Зависимости
+node_modules/
+.npm
+.yarn-integrity
+
+# Временные файлы
+*.tmp
+*.temp
+.cache/
+
+# IDE файлы
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Локальные настройки
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Backup файлы
+*.bak
+*.backup 
