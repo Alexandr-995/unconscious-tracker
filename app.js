@@ -82,7 +82,13 @@ function showPage(page) {
       
       // Обработчики для stats-navbar
       document.getElementById('stats-nav-main').onclick = () => showPage(mainPage);
-      document.getElementById('stats-nav-profile').onclick = () => { showPage(profilePage); renderProfile(); };
+      document.getElementById('stats-nav-profile').onclick = () => { 
+        showPage(profilePage); 
+        setTimeout(() => {
+          renderProfile();
+          console.log('renderProfile() вызван из stats-navbar');
+        }, 100);
+      };
       document.getElementById('stats-nav-guide').onclick = () => showPage(guidePage);
       document.getElementById('stats-nav-feedback').onclick = () => openFeedbackModal();
       document.getElementById('stats-nav-stats').onclick = () => {
@@ -108,6 +114,14 @@ function showPage(page) {
   setTimeout(() => {
     page.classList.add('active');
   }, 40);
+  
+  // ДОБАВИТЬ:
+  if (page === profilePage) {
+    setTimeout(() => {
+      renderProfile();
+      console.log('renderProfile() вызван из showPage');
+    }, 100);
+  }
 }
 
 // ЕДИНСТВЕННЫЕ обработчики навигации
@@ -118,7 +132,16 @@ if (navStats) navStats.onclick = () => {
     renderStats(currentPeriod);
   }, 100);
 };
-if (navProfile) navProfile.onclick = () => { showPage(profilePage); renderProfile(); };
+if (navProfile) {
+  navProfile.onclick = () => { 
+    console.log('Переход на профиль');
+    showPage(profilePage); 
+    setTimeout(() => {
+      renderProfile();
+      console.log('renderProfile() вызван');
+    }, 100);
+  };
+}
 if (navGuide) navGuide.onclick = () => showPage(guidePage);
 if (navFeedback) navFeedback.onclick = () => openFeedbackModal();
 
@@ -239,7 +262,7 @@ if (modalSaveBtn) {
     }
     const now = new Date();
     const entry = {
-      date: now.toISOString(),
+      date: now.toLocaleDateString('en-CA'), // Формат YYYY-MM-DD в локальном времени
       situation,
       thought,
       feeling
@@ -275,7 +298,10 @@ function getPeriodRange(period) {
   } else if (period.type === 'quick') {
     const from = new Date(now);
     from.setDate(now.getDate() - (period.days - 1));
-    return { from, to: now };
+    from.setHours(0, 0, 0, 0);
+    const to = new Date(now);
+    to.setHours(23, 59, 59, 999);
+    return { from, to };
   } else if (period.type === 'custom') {
     const fromDate = new Date(period.from);
     const toDate = new Date(period.to);
@@ -316,7 +342,7 @@ function renderStats(period = currentPeriod) {
     const endDate = new Date(to);
     
     while (d <= endDate) {
-      const ds = d.toISOString().slice(0,10);
+      const ds = d.toLocaleDateString('en-CA'); // Используем локальное время
       days.push(ds);
       dayCounts.push(0);
       dayMap[ds] = dayCounts.length - 1;
@@ -328,11 +354,18 @@ function renderStats(period = currentPeriod) {
   thoughts.forEach(t => {
     if (!t.date) return;
     
-    const thoughtDate = new Date(t.date);
+    // Для старых записей с ISO форматом
+    let thoughtDate;
+    if (t.date.includes('T')) {
+      thoughtDate = new Date(t.date);
+    } else {
+      // Для новых записей с локальным форматом
+      thoughtDate = new Date(t.date + 'T12:00:00');
+    }
     
     if (thoughtDate >= from && thoughtDate <= to) {
       count++;
-      const dateString = thoughtDate.toISOString().slice(0, 10);
+      const dateString = thoughtDate.toLocaleDateString('en-CA');
       if (dayMap[dateString] !== undefined) {
         dayCounts[dayMap[dateString]]++;
       }
@@ -356,8 +389,16 @@ function renderStats(period = currentPeriod) {
     prevTo.setDate(prevTo.getDate() - 1);
     
     thoughts.forEach(t => {
-      const d = t.date?.slice(0,10) || '';
-      if (d >= prevFrom.toISOString().slice(0,10) && d <= prevTo.toISOString().slice(0,10)) {
+      if (!t.date) return;
+      // Для старых записей с ISO форматом
+      let dateString;
+      if (t.date.includes('T')) {
+        dateString = new Date(t.date).toLocaleDateString('en-CA');
+      } else {
+        // Для новых записей с локальным форматом
+        dateString = t.date;
+      }
+      if (dateString >= prevFrom.toLocaleDateString('en-CA') && dateString <= prevTo.toLocaleDateString('en-CA')) {
         prevCount++;
       }
     });
@@ -400,7 +441,14 @@ function renderStats(period = currentPeriod) {
     
     const filtered = thoughts.filter(t => {
       if (!t.date) return false;
-      const thoughtDate = new Date(t.date);
+      // Для старых записей с ISO форматом
+      let thoughtDate;
+      if (t.date.includes('T')) {
+        thoughtDate = new Date(t.date);
+      } else {
+        // Для новых записей с локальным форматом
+        thoughtDate = new Date(t.date + 'T12:00:00');
+      }
       return thoughtDate >= from && thoughtDate <= to;
     });
     
@@ -423,7 +471,14 @@ function renderStats(period = currentPeriod) {
               .forEach((t, idx) => {
         const card = document.createElement('div');
         card.className = 'entry-card';
-        const d = t.date ? new Date(t.date) : null;
+        let d;
+        if (t.date.includes('T')) {
+          // Для старых записей с ISO форматом
+          d = new Date(t.date);
+        } else {
+          // Для новых записей с локальным форматом
+          d = new Date(t.date + 'T12:00:00');
+        }
         const dateStr = d ? d.toLocaleDateString('ru-RU') + ', ' + d.toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'}) : '';
         card.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
@@ -683,7 +738,6 @@ document.addEventListener('keydown', (e) => {
 function isUserRegistered() {
   const registered = localStorage.getItem('userRegistered');
   const userData = localStorage.getItem('userData');
-  console.log('Проверка регистрации:', registered, userData); // Для отладки
   return registered === 'true' && userData !== null;
 }
 
@@ -692,7 +746,6 @@ function saveUserData(userData) {
     localStorage.setItem('userData', JSON.stringify(userData));
     localStorage.setItem('userRegistered', 'true');
     localStorage.setItem('registrationDate', new Date().toISOString());
-    console.log('Данные сохранены:', userData); // Для отладки
   } catch (error) {
     console.error('Ошибка сохранения:', error);
   }
@@ -737,14 +790,26 @@ function handleRegistrationComplete() {
   if (!validateRegistrationForm()) {
     return;
   }
+  
   const userData = {
     firstName: document.getElementById('reg-first-name').value.trim(),
     lastName: document.getElementById('reg-last-name').value.trim(),
     email: document.getElementById('reg-email').value.trim(),
     phone: document.getElementById('reg-phone').value.trim()
   };
+  
   saveUserData(userData);
+  
+  // Дополнительно сохраняем флаг завершения туториала
+  localStorage.setItem('tutorialCompleted', 'true');
+  
   hideRegistrationModal();
+  
+  // Показываем основное приложение
+  setTimeout(() => {
+    showMainApp();
+  }, 100);
+  
   if (successNotification) {
     successNotification.innerHTML = `🎉 Добро пожаловать, ${userData.firstName}! Начните фиксировать свои мысли.`;
     successNotification.style.background = 'linear-gradient(135deg, #00d4aa 0%, #00b896 100%)';
@@ -831,7 +896,14 @@ function getActivityData() {
   
   thoughts.forEach(thought => {
     if (thought.date) {
-      const date = thought.date.slice(0, 10);
+      let date;
+      if (thought.date.includes('T')) {
+        // Для старых записей с ISO форматом
+        date = new Date(thought.date).toLocaleDateString('en-CA');
+      } else {
+        // Для новых записей с локальным форматом
+        date = thought.date;
+      }
       activityMap[date] = (activityMap[date] || 0) + 1;
     }
   });
@@ -885,8 +957,8 @@ function createProfileDayElement(day, isOtherMonth, date, activityData) {
   if (isOtherMonth) {
     dayElement.classList.add('other-month');
   }
-  const dateString = date.toISOString().slice(0, 10);
-  const today = new Date().toISOString().slice(0, 10);
+  const dateString = date.toLocaleDateString('en-CA');
+  const today = new Date().toLocaleDateString('en-CA');
   if (dateString === today) {
     dayElement.classList.add('today');
   }
@@ -940,13 +1012,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
-  
-  // Проверяем нужно ли показать регистрацию
-  if (!isUserRegistered()) {
-    setTimeout(() => {
-      showRegistrationModal();
-    }, 1000);
-  }
   
   // Обработчик кнопки завершения регистрации
   const completeRegistrationBtn = document.getElementById('complete-registration-btn');
@@ -1122,16 +1187,7 @@ renderStats = function(...args) {
   return result;
 };
 
-// --- Обработчик кнопки экспорта ---
-const exportBtn = document.getElementById('export-data-btn');
-if (exportBtn) {
-  exportBtn.onclick = function() {
-    console.log('Кнопка экспорта нажата!');
-    openExportModal(); // РАСКОММЕНТИРОВАНО!
-  };
-} else {
-  console.error('Кнопка экспорта не найдена!');
-}
+
 
 // --- Функция отправки в N8n ---
 async function sendToN8nWebhook(data, email) {
@@ -1163,68 +1219,56 @@ async function sendToN8nWebhook(data, email) {
 
 // --- ИСПРАВЛЕННЫЕ обработчики модального окна экспорта ---
 function setupExportModalHandlers() {
-  console.log('🔧 Настраиваем обработчики модала экспорта');
   // Кнопка закрытия
   const closeExportModalBtn = document.getElementById('close-export-modal');
   if (closeExportModalBtn) {
     closeExportModalBtn.onclick = closeExportModal;
-    console.log('✅ Обработчик закрытия установлен');
   } else {
-    console.error('❌ Кнопка close-export-modal не найдена');
+    console.error('Кнопка close-export-modal не найдена');
   }
   // Кнопка отмены
   const cancelExportBtn = document.getElementById('cancel-export-btn');
   if (cancelExportBtn) {
     cancelExportBtn.onclick = closeExportModal;
-    console.log('✅ Обработчик отмены установлен');
   } else {
-    console.error('❌ Кнопка cancel-export-btn не найдена');
+    console.error('Кнопка cancel-export-btn не найдена');
   }
   // Главная кнопка отправки
   const generateExportBtn = document.getElementById('generate-export-btn');
   if (generateExportBtn) {
     generateExportBtn.onclick = () => {
-      console.log('🚀 Кнопка "Отправить в анализ" нажата!');
       const emailInput = document.getElementById('export-email-input');
       if (!emailInput) {
-        console.error('❌ Поле email не найдено');
+        console.error('Поле email не найдено');
         alert('Ошибка: поле email не найдено');
         return;
       }
       const email = emailInput.value.trim();
-      console.log('📧 Email:', email);
       if (!email) {
         alert('Введите email!');
         return;
       }
-      console.log('📊 Генерируем данные...');
       const data = generateExportData();
-      console.log('📊 Данные сгенерированы:', data);
-      console.log('🌐 Отправляем в N8n...');
       exportToJSONWithN8n(data, email);
       closeExportModal();
     };
-    console.log('✅ Главный обработчик отправки установлен');
   } else {
-    console.error('❌ Кнопка generate-export-btn не найдена');
+    console.error('Кнопка generate-export-btn не найдена');
   }
 }
 
 // --- ИСПРАВЛЕННАЯ функция открытия модала ---
 function openExportModal() {
-  console.log('🔄 Открываем модальное окно экспорта');
   const exportModal = document.getElementById('export-modal');
   if (!exportModal) {
-    console.error('❌ Модальное окно export-modal не найдено в HTML!');
+    console.error('Модальное окно export-modal не найдено в HTML!');
     return;
   }
-  console.log('✅ Модальное окно найдено');
   // АВТОЗАПОЛНЕНИЕ EMAIL
   const userData = getUserData();
   const emailInput = document.getElementById('export-email-input');
   if (userData && userData.email && emailInput) {
     emailInput.value = userData.email;
-    console.log('✅ Email автозаполнен:', userData.email);
   }
   // Обновляем информацию о периоде
   const periodInfo = document.getElementById('export-period-info');
@@ -1236,12 +1280,10 @@ function openExportModal() {
     } else {
       periodInfo.textContent = `Текущий период: ${currentPeriod.from} — ${currentPeriod.to}`;
     }
-    console.log('✅ Период обновлен');
   }
   // Показываем модал
   exportModal.classList.add('active');
   document.body.style.overflow = 'hidden';
-  console.log('✅ Модальное окно показано');
   // ВАЖНО: Устанавливаем обработчики ПОСЛЕ показа модала
   setTimeout(() => {
     setupExportModalHandlers();
@@ -1265,7 +1307,14 @@ function generateExportData() {
   // Фильтруем записи по текущему периоду
   const periodThoughts = thoughts.filter(t => {
     if (!t.date) return false;
-    const thoughtDate = new Date(t.date);
+    // Для старых записей с ISO форматом
+    let thoughtDate;
+    if (t.date.includes('T')) {
+      thoughtDate = new Date(t.date);
+    } else {
+      // Для новых записей с локальным форматом
+      thoughtDate = new Date(t.date + 'T12:00:00');
+    }
     return thoughtDate >= from && thoughtDate <= to;
   });
   
@@ -1276,7 +1325,7 @@ function generateExportData() {
   const endDate = new Date(to);
   
   while (d <= endDate) {
-    const ds = d.toISOString().slice(0,10);
+    const ds = d.toLocaleDateString('en-CA');
     days.push(ds);
     dayMap[ds] = 0;
     d.setDate(d.getDate() + 1);
@@ -1285,7 +1334,14 @@ function generateExportData() {
   // Подсчитываем записи по дням
   periodThoughts.forEach(t => {
     if (!t.date) return;
-    const dateString = new Date(t.date).toISOString().slice(0, 10);
+    let dateString;
+    if (t.date.includes('T')) {
+      // Для старых записей с ISO форматом
+      dateString = new Date(t.date).toLocaleDateString('en-CA');
+    } else {
+      // Для новых записей с локальным форматом
+      dateString = t.date;
+    }
     if (dayMap[dateString] !== undefined) {
       dayMap[dateString]++;
     }
@@ -1360,14 +1416,12 @@ function hideLoadingNotification() {
 // Функция отправки в N8n (async, с логами и уведомлениями)
 async function exportToJSONWithN8n(data, email) {
   try {
-    console.log('📤 Начинаем отправку в N8n');
     showLoadingNotification('🤖 Отправляем данные в ИИ-анализ...');
     await sendToN8nWebhook(data, email);
     hideLoadingNotification();
     showReportSentNotification();
-    console.log('✅ Отправка завершена успешно');
   } catch (error) {
-    console.error('❌ Ошибка:', error);
+    console.error('Ошибка отправки:', error);
     hideLoadingNotification();
     alert('Ошибка отправки: ' + error.message);
   }
@@ -1456,3 +1510,390 @@ function closeAvatarModal() {
     document.body.style.overflow = 'auto';
   }
 }
+
+// --- ФУНКЦИИ ЭКСПОРТА И ИМПОРТА ДАННЫХ ---
+
+// Функция экспорта данных
+function exportData() {
+  try {
+    // Собираем все данные из localStorage
+    const exportData = {
+      thoughts: getThoughts(),
+      userData: getUserData(),
+      userAvatar: localStorage.getItem('userAvatar'),
+      registrationDate: localStorage.getItem('registrationDate'),
+      userRegistered: localStorage.getItem('userRegistered'),
+      exportDate: new Date().toLocaleDateString('ru-RU'),
+      exportTime: new Date().toLocaleTimeString('ru-RU'),
+      appVersion: '1.0'
+    };
+
+    // Создаем JSON файл
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    
+    // Создаем ссылку для скачивания
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `trecker-bessoznatelnogo-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    
+    // Скачиваем файл
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Освобождаем память
+    URL.revokeObjectURL(url);
+    
+    // Показываем уведомление
+    if (successNotification) {
+      successNotification.innerHTML = '✅ Данные экспортированы! Используйте этот файл для переноса между Safari и PWA версией приложения.';
+      successNotification.classList.add('show');
+      setTimeout(() => {
+        successNotification.classList.remove('show');
+      }, 5000);
+    }
+    
+    console.log('Экспорт данных завершен');
+  } catch (error) {
+    console.error('❌ Ошибка экспорта:', error);
+    alert('Ошибка экспорта данных: ' + error.message);
+  }
+}
+
+// Функция импорта данных
+function importData() {
+  const fileInput = document.getElementById('import-file-input');
+  if (fileInput) {
+    fileInput.click();
+  }
+}
+
+// Обработчик выбора файла для импорта
+function handleImportFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (!file.name.endsWith('.json')) {
+    alert('Пожалуйста, выберите JSON файл');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const importedData = JSON.parse(e.target.result);
+      
+      // Проверяем структуру данных
+      if (!importedData.thoughts || !Array.isArray(importedData.thoughts)) {
+        throw new Error('Неверный формат файла: отсутствуют записи мыслей');
+      }
+
+      // Получаем существующие данные
+      const existingThoughts = getThoughts();
+      const existingUserData = getUserData();
+
+      // Объединяем записи мыслей (без дублирования)
+      const mergedThoughts = [...existingThoughts];
+      let newThoughtsCount = 0;
+
+      importedData.thoughts.forEach(importedThought => {
+        // Проверяем, есть ли уже такая запись
+        const isDuplicate = existingThoughts.some(existing => 
+          existing.date === importedThought.date && 
+          existing.situation === importedThought.situation &&
+          existing.thought === importedThought.thought
+        );
+
+        if (!isDuplicate) {
+          mergedThoughts.push(importedThought);
+          newThoughtsCount++;
+        }
+      });
+
+      // Сохраняем объединенные данные
+      saveThoughts(mergedThoughts);
+
+      // Обновляем данные пользователя, если они есть в импорте
+      if (importedData.userData && importedData.userData.name) {
+        const mergedUserData = { ...existingUserData, ...importedData.userData };
+        saveUserData(mergedUserData);
+      }
+
+      // Обновляем аватар, если он есть в импорте
+      if (importedData.userAvatar) {
+        localStorage.setItem('userAvatar', importedData.userAvatar);
+      }
+
+      // Обновляем отображение
+      renderProfile();
+      if (document.getElementById('stats-page').classList.contains('active')) {
+        renderStats(currentPeriod);
+      }
+
+      // Показываем уведомление об успехе
+      if (successNotification) {
+        successNotification.innerHTML = `✅ Импорт завершен! Добавлено ${newThoughtsCount} записей. Данные теперь доступны в этой версии приложения.`;
+        successNotification.classList.add('show');
+        setTimeout(() => {
+          successNotification.classList.remove('show');
+        }, 5000);
+      }
+
+      console.log(`📥 Импорт завершен: добавлено ${newThoughtsCount} записей`);
+      
+      // Очищаем input для возможности повторного импорта того же файла
+      event.target.value = '';
+      
+    } catch (error) {
+      console.error('❌ Ошибка импорта:', error);
+      alert('Ошибка импорта данных: ' + error.message);
+      event.target.value = '';
+    }
+  };
+
+  reader.readAsText(file);
+}
+
+
+
+// === WELCOME TUTORIAL ===
+let currentTutorialSlide = 1;
+const totalTutorialSlides = 8;
+
+// Функция проверки необходимости показа туториала
+function shouldShowTutorial() {
+  const tutorialCompleted = localStorage.getItem('tutorialCompleted');
+  return tutorialCompleted !== 'true'; // Показывать только если НЕ пройден
+}
+
+// Функция инициализации туториала
+function initTutorial() {
+  const tutorialCompleted = localStorage.getItem('tutorialCompleted') === 'true';
+  const userRegistered = isUserRegistered();
+  
+  if (!tutorialCompleted) {
+    showTutorial();
+    setupTutorialHandlers();
+  } else if (!userRegistered) {
+    setTimeout(() => {
+      showRegistrationModal();
+    }, 500);
+  } else {
+    showMainApp();
+  }
+}
+
+// Показать туториал
+function showTutorial() {
+  const tutorialOverlay = document.getElementById('welcome-tutorial');
+  if (tutorialOverlay) {
+    tutorialOverlay.style.display = 'flex';
+    updateTutorialProgress();
+  }
+}
+
+// Скрыть туториал
+function hideTutorial() {
+  const tutorialOverlay = document.getElementById('welcome-tutorial');
+  if (tutorialOverlay) {
+    tutorialOverlay.classList.add('hidden');
+    setTimeout(() => {
+      tutorialOverlay.style.display = 'none';
+      tutorialOverlay.classList.remove('hidden');
+    }, 300);
+  }
+}
+
+// Настройка обработчиков туториала
+function setupTutorialHandlers() {
+  // Кнопка "Пропустить"
+  const skipBtn = document.getElementById('skip-tutorial-btn');
+  if (skipBtn) {
+    skipBtn.addEventListener('click', () => {
+      completeTutorial();
+    });
+  }
+  
+  // Кнопка "Назад"
+  const prevBtn = document.getElementById('tutorial-prev-btn');
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => navigateTutorial(-1));
+  }
+  
+  // Кнопка "Далее"
+  const nextBtn = document.getElementById('tutorial-next-btn');
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      navigateTutorial(1);
+    });
+  }
+  
+  // Обработка клавиш
+  document.addEventListener('keydown', handleTutorialKeydown);
+}
+
+// Обработка клавиш для туториала
+function handleTutorialKeydown(event) {
+  const tutorialOverlay = document.getElementById('welcome-tutorial');
+  if (tutorialOverlay && tutorialOverlay.style.display === 'flex') {
+    if (event.key === 'ArrowLeft') {
+      navigateTutorial(-1);
+    } else if (event.key === 'ArrowRight') {
+      navigateTutorial(1);
+    } else if (event.key === 'Escape') {
+      completeTutorial();
+    }
+  }
+}
+
+// Навигация по туториалу
+function navigateTutorial(direction) {
+  const newSlide = currentTutorialSlide + direction;
+  
+  if (newSlide >= 1 && newSlide <= totalTutorialSlides) {
+    showTutorialSlide(newSlide);
+  } else if (newSlide > totalTutorialSlides) {
+    // Достигли конца туториала
+    completeTutorial();
+  }
+}
+
+// Показать конкретный слайд
+function showTutorialSlide(slideNumber) {
+  // Скрываем все слайды
+  const slides = document.querySelectorAll('.tutorial-slide');
+  slides.forEach(slide => {
+    slide.classList.remove('active', 'prev');
+  });
+  
+  // Показываем текущий слайд
+  const currentSlide = document.querySelector(`[data-slide="${slideNumber}"]`);
+  if (currentSlide) {
+    currentSlide.classList.add('active');
+  }
+  
+  // Показываем предыдущий слайд для анимации
+  if (slideNumber > 1) {
+    const prevSlide = document.querySelector(`[data-slide="${slideNumber - 1}"]`);
+    if (prevSlide) {
+      prevSlide.classList.add('prev');
+    }
+  }
+  
+  currentTutorialSlide = slideNumber;
+  updateTutorialProgress();
+  updateTutorialButtons();
+}
+
+// Обновить индикатор прогресса
+function updateTutorialProgress() {
+  const progressFill = document.getElementById('tutorial-progress-fill');
+  const progressText = document.getElementById('tutorial-progress-text');
+  
+  if (progressFill) {
+    const progress = (currentTutorialSlide / totalTutorialSlides) * 100;
+    progressFill.style.width = `${progress}%`;
+  }
+  
+  if (progressText) {
+    progressText.textContent = `${currentTutorialSlide}/${totalTutorialSlides}`;
+  }
+}
+
+// Обновить состояние кнопок
+function updateTutorialButtons() {
+  const prevBtn = document.getElementById('tutorial-prev-btn');
+  const nextBtn = document.getElementById('tutorial-next-btn');
+  
+  if (prevBtn) {
+    prevBtn.disabled = currentTutorialSlide === 1;
+  }
+  
+  if (nextBtn) {
+    if (currentTutorialSlide === totalTutorialSlides) {
+      nextBtn.textContent = 'Начать →';
+    } else {
+      nextBtn.textContent = 'Далее →';
+    }
+  }
+}
+
+// Показать основное приложение
+function showMainApp() {
+  // Показываем главную страницу
+  showPage(mainPage);
+}
+
+// Завершить туториал
+function completeTutorial() {
+  // Сохраняем флаг завершения
+  localStorage.setItem('tutorialCompleted', 'true');
+  
+  // Скрываем туториал
+  hideTutorial();
+  
+  // Проверяем регистрацию и показываем нужную страницу
+  setTimeout(() => {
+    if (!isUserRegistered()) {
+      showRegistrationModal();
+    } else {
+      showMainApp();
+    }
+  }, 500);
+}
+
+// Функция для сброса туториала (для тестирования)
+function resetTutorial() {
+  localStorage.removeItem('tutorialCompleted');
+  location.reload();
+}
+
+// Функция для сброса всех флагов (для тестирования)
+function resetAllFlags() {
+  localStorage.removeItem('tutorialCompleted');
+  localStorage.removeItem('userRegistered');
+  localStorage.removeItem('userData');
+  localStorage.removeItem('registrationDate');
+  location.reload();
+}
+
+// Инициализация туториала при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+  // Инициализируем туториал
+  initTutorial();
+  
+  // Добавляем функции сброса в глобальную область для тестирования
+  window.resetTutorial = resetTutorial;
+  window.resetAllFlags = resetAllFlags;
+  
+  // Остальные обработчики...
+  setupExportModalHandlers();
+  
+  // Обработчик кнопки получения отчета
+  const getReportBtn = document.getElementById('get-report-btn');
+  if (getReportBtn) {
+    getReportBtn.addEventListener('click', openExportModal);
+  }
+  
+  // Обработчик кнопки экспорта данных
+  const exportBtn = document.getElementById('export-data-btn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', exportData);
+  }
+
+  // Обработчик кнопки импорта данных
+  const importBtn = document.getElementById('import-data-btn');
+  if (importBtn) {
+    importBtn.addEventListener('click', importData);
+  }
+
+  // Обработчик выбора файла для импорта
+  const importFileInput = document.getElementById('import-file-input');
+  if (importFileInput) {
+    importFileInput.addEventListener('change', handleImportFile);
+  }
+});
+
+
