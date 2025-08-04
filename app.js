@@ -8,6 +8,74 @@
 
 console.log('App.js загружен');
 
+// === ЭКСТРЕННАЯ ДИАГНОСТИКА ТУТОРИАЛА ===
+function testTutorialStorage() {
+  console.log('=== ТЕСТ ТУТОРИАЛА ===');
+  console.log('Протокол:', window.location.protocol);
+  console.log('Хост:', window.location.host);
+  console.log('URL:', window.location.href);
+  
+  // Проверяем поддержку localStorage
+  if (typeof(Storage) === "undefined") {
+    console.error('❌ localStorage НЕ поддерживается!');
+    return false;
+  }
+  
+  console.log('✅ localStorage поддерживается');
+  console.log('tutorialCompleted:', localStorage.getItem('tutorialCompleted'));
+  console.log('userRegistered:', localStorage.getItem('userRegistered'));
+  
+  // Тест записи
+  try {
+    localStorage.setItem('test-tutorial', 'working');
+    const testValue = localStorage.getItem('test-tutorial');
+    console.log('Тест записи:', testValue);
+    
+    if (testValue === 'working') {
+      console.log('✅ localStorage работает');
+      localStorage.removeItem('test-tutorial');
+      return true;
+    } else {
+      console.error('❌ localStorage НЕ работает - данные не сохраняются');
+      return false;
+    }
+  } catch (error) {
+    console.error('❌ Ошибка localStorage:', error);
+    return false;
+  }
+}
+
+// Добавляем функцию в глобальную область
+window.testTutorialStorage = testTutorialStorage;
+
+// ЗАКОММЕНТИРОВАНО: Функция для принудительного завершения туториала
+/*
+function forceCompleteTutorial() {
+  console.log('🚨 ПРИНУДИТЕЛЬНОЕ ЗАВЕРШЕНИЕ ТУТОРИАЛА');
+  
+  try {
+    localStorage.setItem('tutorialCompleted', 'true');
+    console.log('✅ Сохранено в localStorage');
+  } catch (error) {
+    console.log('❌ Ошибка localStorage, используем sessionStorage');
+    sessionStorage.setItem('tutorialCompleted', 'true');
+    console.log('✅ Сохранено в sessionStorage');
+  }
+  
+  // Скрываем туториал
+  const tutorialOverlay = document.getElementById('welcome-tutorial');
+  if (tutorialOverlay) {
+    tutorialOverlay.style.display = 'none';
+  }
+  
+  // Показываем основное приложение
+  showMainApp();
+}
+
+// Добавляем в глобальную область
+window.forceCompleteTutorial = forceCompleteTutorial;
+*/
+
 // Регистрация Service Worker для PWA
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -76,22 +144,32 @@ function showPage(page) {
           <button id="stats-nav-guide" class="nav-btn">Справочник</button>
           <button id="stats-nav-stats" class="nav-btn active">Статистика</button>
           <button id="stats-nav-feedback" class="nav-btn">Обратная связь</button>
+          <button id="stats-nav-help" class="nav-btn" onclick="showTutorialManually()">ℹ️ Справка</button>
         </div>
       `;
       statsPage.insertBefore(statsNavbar, statsPage.firstChild);
       
       // Обработчики для stats-navbar
-      document.getElementById('stats-nav-main').onclick = () => showPage(mainPage);
+      document.getElementById('stats-nav-main').onclick = () => {
+        showPage(mainPage);
+        updateActiveNavigation('main');
+      };
       document.getElementById('stats-nav-profile').onclick = () => { 
         showPage(profilePage); 
+        updateActiveNavigation('profile');
         setTimeout(() => {
           renderProfile();
           console.log('renderProfile() вызван из stats-navbar');
         }, 100);
       };
-      document.getElementById('stats-nav-guide').onclick = () => showPage(guidePage);
+      document.getElementById('stats-nav-guide').onclick = () => {
+        showPage(guidePage);
+        updateActiveNavigation('guide');
+      };
       document.getElementById('stats-nav-feedback').onclick = () => openFeedbackModal();
+      document.getElementById('stats-nav-help').onclick = () => showTutorialManually();
       document.getElementById('stats-nav-stats').onclick = () => {
+        updateActiveNavigation('stats');
         setTimeout(() => {
           renderStats(currentPeriod);
         }, 100);
@@ -115,6 +193,24 @@ function showPage(page) {
     page.classList.add('active');
   }, 40);
   
+  // ДОБАВИТЬ: Убираем активный класс со всех кнопок навигации
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+  
+  // ДОБАВИТЬ: Устанавливаем активный класс для текущей страницы
+  if (page === mainPage) {
+    const mainBtn = document.getElementById('nav-main') || document.getElementById('stats-nav-main');
+    if (mainBtn) mainBtn.classList.add('active');
+  } else if (page === profilePage) {
+    const profileBtn = document.getElementById('nav-profile') || document.getElementById('stats-nav-profile');
+    if (profileBtn) profileBtn.classList.add('active');
+  } else if (page === guidePage) {
+    const guideBtn = document.getElementById('nav-guide') || document.getElementById('stats-nav-guide');
+    if (guideBtn) guideBtn.classList.add('active');
+  } else if (page === statsPage) {
+    const statsBtn = document.getElementById('nav-stats') || document.getElementById('stats-nav-stats');
+    if (statsBtn) statsBtn.classList.add('active');
+  }
+  
   // ДОБАВИТЬ:
   if (page === profilePage) {
     setTimeout(() => {
@@ -124,26 +220,48 @@ function showPage(page) {
   }
 }
 
-// ЕДИНСТВЕННЫЕ обработчики навигации
-if (navMain) navMain.onclick = () => showPage(mainPage);
+// ИСПРАВЛЕННЫЕ обработчики навигации
+if (navMain) navMain.onclick = () => {
+  showPage(mainPage);
+  updateActiveNavigation('main');
+};
+
 if (navStats) navStats.onclick = () => { 
   showPage(statsPage); 
+  updateActiveNavigation('stats');
   setTimeout(() => {
     renderStats(currentPeriod);
   }, 100);
 };
-if (navProfile) {
-  navProfile.onclick = () => { 
-    console.log('Переход на профиль');
-    showPage(profilePage); 
-    setTimeout(() => {
-      renderProfile();
-      console.log('renderProfile() вызван');
-    }, 100);
-  };
+
+if (navProfile) navProfile.onclick = () => { 
+  showPage(profilePage); 
+  updateActiveNavigation('profile');
+  setTimeout(() => {
+    renderProfile();
+  }, 100);
+};
+
+if (navGuide) navGuide.onclick = () => {
+  showPage(guidePage);
+  updateActiveNavigation('guide');
+};
+
+if (navFeedback) navFeedback.onclick = () => {
+  openFeedbackModal();
+};
+
+// ДОБАВЬ новую функцию для обновления навигации:
+function updateActiveNavigation(activePage) {
+  // Убираем активный класс со всех кнопок
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+  
+  // Добавляем активный класс к текущей кнопке (проверяем оба варианта)
+  const activeBtn = document.getElementById(`nav-${activePage}`) || document.getElementById(`stats-nav-${activePage}`);
+  if (activeBtn) {
+    activeBtn.classList.add('active');
+  }
 }
-if (navGuide) navGuide.onclick = () => showPage(guidePage);
-if (navFeedback) navFeedback.onclick = () => openFeedbackModal();
 
 function openThoughtModal() {
   console.log('Открываем модальное окно');
@@ -1658,39 +1776,80 @@ function handleImportFile(event) {
 
 
 
-// === WELCOME TUTORIAL ===
+// === ИСПРАВЛЕННАЯ ЛОГИКА ТУТОРИАЛА ===
 let currentTutorialSlide = 1;
 const totalTutorialSlides = 8;
 
-// Функция проверки необходимости показа туториала
-function shouldShowTutorial() {
-  const tutorialCompleted = localStorage.getItem('tutorialCompleted');
-  return tutorialCompleted !== 'true'; // Показывать только если НЕ пройден
+// Функция проверки первого посещения
+function isFirstVisit() {
+  try {
+    // Проверяем основной флаг
+    const tutorialCompleted = localStorage.getItem('tutorialCompleted');
+    const userRegistered = localStorage.getItem('userRegistered');
+    const hasAnyData = localStorage.getItem('negativeThoughts');
+    
+    console.log('Проверка первого посещения:');
+    console.log('- tutorialCompleted:', tutorialCompleted);
+    console.log('- userRegistered:', userRegistered);
+    console.log('- hasAnyData:', hasAnyData ? 'есть данные' : 'нет данных');
+    
+    // Первое посещение = нет флага завершения туториала
+    const isFirst = tutorialCompleted !== 'true';
+    console.log('- isFirstVisit:', isFirst);
+    
+    return isFirst;
+  } catch (error) {
+    console.error('Ошибка проверки первого посещения:', error);
+    return false; // При ошибке не показываем туториал
+  }
 }
 
-// Функция инициализации туториала
-function initTutorial() {
-  const tutorialCompleted = localStorage.getItem('tutorialCompleted') === 'true';
-  const userRegistered = isUserRegistered();
+// Функция инициализации приложения
+function initApp() {
+  console.log('🚀 === ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ===');
   
-  if (!tutorialCompleted) {
-    showTutorial();
-    setupTutorialHandlers();
-  } else if (!userRegistered) {
-    setTimeout(() => {
-      showRegistrationModal();
-    }, 500);
-  } else {
+  try {
+    const isFirst = isFirstVisit();
+    const userRegistered = isUserRegistered();
+    
+    console.log('📊 Состояние приложения:');
+    console.log('- Первое посещение:', isFirst);
+    console.log('- Пользователь зарегистрирован:', userRegistered);
+    
+    if (isFirst) {
+      console.log('🎯 ПЕРВОЕ ПОСЕЩЕНИЕ - показываем туториал');
+      showTutorial();
+      setupTutorialHandlers();
+    } else if (!userRegistered) {
+      console.log('📝 Туториал пройден, но нет регистрации - показываем регистрацию');
+      setTimeout(() => {
+        showRegistrationModal();
+      }, 300);
+    } else {
+      console.log('✅ Всё готово - показываем приложение');
+      showMainApp();
+    }
+  } catch (error) {
+    console.error('Критическая ошибка инициализации:', error);
+    // При критической ошибке показываем основное приложение
     showMainApp();
   }
 }
 
 // Показать туториал
 function showTutorial() {
+  console.log('🎯 Показываем туториал');
   const tutorialOverlay = document.getElementById('welcome-tutorial');
+  
   if (tutorialOverlay) {
     tutorialOverlay.style.display = 'flex';
+    tutorialOverlay.style.zIndex = '15000'; // Увеличиваем z-index
     updateTutorialProgress();
+    console.log('✅ Туториал показан');
+  } else {
+    console.error('❌ Элемент welcome-tutorial не найден!');
+    // Fallback - показываем основное приложение
+    showMainApp();
   }
 }
 
@@ -1706,51 +1865,75 @@ function hideTutorial() {
   }
 }
 
-// Настройка обработчиков туториала
+// ЕДИНСТВЕННАЯ функция настройки обработчиков
 function setupTutorialHandlers() {
-  // Кнопка "Пропустить"
-  const skipBtn = document.getElementById('skip-tutorial-btn');
-  if (skipBtn) {
-    skipBtn.addEventListener('click', () => {
-      completeTutorial();
-    });
-  }
+  console.log('🔧 Настройка обработчиков туториала');
   
-  // Кнопка "Назад"
-  const prevBtn = document.getElementById('tutorial-prev-btn');
-  if (prevBtn) {
-    prevBtn.addEventListener('click', () => navigateTutorial(-1));
-  }
+  // Удаляем все существующие обработчики (если есть)
+  document.removeEventListener('click', handleTutorialClicks);
+  document.removeEventListener('keydown', handleTutorialKeydown);
   
-  // Кнопка "Далее"
-  const nextBtn = document.getElementById('tutorial-next-btn');
-  if (nextBtn) {
-    nextBtn.addEventListener('click', () => {
-      navigateTutorial(1);
-    });
-  }
-  
-  // Обработка клавиш
+  // Добавляем единственный обработчик через делегирование
+  document.addEventListener('click', handleTutorialClicks);
   document.addEventListener('keydown', handleTutorialKeydown);
+  
+  console.log('✅ Обработчики туториала установлены');
+}
+
+// Единый обработчик кликов для туториала
+function handleTutorialClicks(e) {
+  const tutorialOverlay = document.getElementById('welcome-tutorial');
+  if (!tutorialOverlay || tutorialOverlay.style.display === 'none') return;
+  
+  console.log('Клик в туториале:', e.target.id, e.target.className);
+  
+  // Останавливаем всплытие для всех кликов в туториале
+  e.preventDefault();
+  e.stopPropagation();
+  
+  if (e.target.id === 'skip-tutorial-btn' || e.target.closest('#skip-tutorial-btn')) {
+    console.log('✅ Кнопка "Пропустить/Закрыть" нажата');
+    
+    // Проверяем, это ручной режим или первый запуск
+    const skipBtn = document.getElementById('skip-tutorial-btn');
+    if (skipBtn && skipBtn.textContent === 'Закрыть') {
+      // Ручной режим - просто закрываем
+      closeManualTutorial();
+    } else {
+      // Первый запуск - завершаем туториал
+      completeTutorial();
+    }
+  } else if (e.target.id === 'tutorial-next-btn' || e.target.closest('#tutorial-next-btn')) {
+    console.log('✅ Кнопка "Далее" нажата');
+    navigateTutorial(1);
+  } else if (e.target.id === 'tutorial-prev-btn' || e.target.closest('#tutorial-prev-btn')) {
+    console.log('✅ Кнопка "Назад" нажата');
+    navigateTutorial(-1);
+  }
 }
 
 // Обработка клавиш для туториала
 function handleTutorialKeydown(event) {
   const tutorialOverlay = document.getElementById('welcome-tutorial');
-  if (tutorialOverlay && tutorialOverlay.style.display === 'flex') {
-    if (event.key === 'ArrowLeft') {
-      navigateTutorial(-1);
-    } else if (event.key === 'ArrowRight') {
-      navigateTutorial(1);
-    } else if (event.key === 'Escape') {
-      completeTutorial();
-    }
+  if (!tutorialOverlay || tutorialOverlay.style.display === 'none') return;
+  
+  if (event.key === 'ArrowLeft') {
+    event.preventDefault();
+    navigateTutorial(-1);
+  } else if (event.key === 'ArrowRight') {
+    event.preventDefault();
+    navigateTutorial(1);
+  } else if (event.key === 'Escape') {
+    event.preventDefault();
+    completeTutorial();
   }
 }
 
 // Навигация по туториалу
 function navigateTutorial(direction) {
   const newSlide = currentTutorialSlide + direction;
+  
+  console.log(`Переход с слайда ${currentTutorialSlide} на ${newSlide}`);
   
   if (newSlide >= 1 && newSlide <= totalTutorialSlides) {
     showTutorialSlide(newSlide);
@@ -1762,6 +1945,8 @@ function navigateTutorial(direction) {
 
 // Показать конкретный слайд
 function showTutorialSlide(slideNumber) {
+  console.log(`Показываем слайд ${slideNumber}`);
+  
   // Скрываем все слайды
   const slides = document.querySelectorAll('.tutorial-slide');
   slides.forEach(slide => {
@@ -1772,6 +1957,9 @@ function showTutorialSlide(slideNumber) {
   const currentSlide = document.querySelector(`[data-slide="${slideNumber}"]`);
   if (currentSlide) {
     currentSlide.classList.add('active');
+    console.log(`✅ Слайд ${slideNumber} активирован`);
+  } else {
+    console.error(`❌ Слайд ${slideNumber} не найден`);
   }
   
   // Показываем предыдущий слайд для анимации
@@ -1809,6 +1997,7 @@ function updateTutorialButtons() {
   
   if (prevBtn) {
     prevBtn.disabled = currentTutorialSlide === 1;
+    prevBtn.style.opacity = currentTutorialSlide === 1 ? '0.3' : '1';
   }
   
   if (nextBtn) {
@@ -1822,51 +2011,108 @@ function updateTutorialButtons() {
 
 // Показать основное приложение
 function showMainApp() {
+  // Убираем обработчики туториала
+  document.removeEventListener('click', handleTutorialClicks);
+  document.removeEventListener('keydown', handleTutorialKeydown);
+  
+  // Скрываем туториал
+  const tutorialOverlay = document.getElementById('welcome-tutorial');
+  if (tutorialOverlay) {
+    tutorialOverlay.style.display = 'none';
+  }
+  
   // Показываем главную страницу
   showPage(mainPage);
 }
 
-// Завершить туториал
+// Завершить туториал (устанавливает флаг навсегда)
 function completeTutorial() {
-  // Сохраняем флаг завершения
-  localStorage.setItem('tutorialCompleted', 'true');
+  console.log('🎯 === ЗАВЕРШЕНИЕ ТУТОРИАЛА ===');
+  
+  try {
+    // Устанавливаем флаг НАВСЕГДА
+    localStorage.setItem('tutorialCompleted', 'true');
+    console.log('✅ Флаг tutorialCompleted установлен НАВСЕГДА');
+  } catch (error) {
+    console.error('❌ Ошибка сохранения флага:', error);
+    // Fallback в sessionStorage
+    try {
+      sessionStorage.setItem('tutorialCompleted', 'true');
+      console.log('✅ Флаг сохранен в sessionStorage как fallback');
+    } catch (e) {
+      console.error('❌ Критическая ошибка сохранения:', e);
+    }
+  }
   
   // Скрываем туториал
   hideTutorial();
   
-  // Проверяем регистрацию и показываем нужную страницу
+  // Переходим к следующему шагу
   setTimeout(() => {
-    if (!isUserRegistered()) {
+    const userRegistered = isUserRegistered();
+    if (!userRegistered) {
+      console.log('📝 Переходим к регистрации');
       showRegistrationModal();
     } else {
+      console.log('✅ Переходим к приложению');
       showMainApp();
     }
   }, 500);
 }
 
-// Функция для сброса туториала (для тестирования)
-function resetTutorial() {
-  localStorage.removeItem('tutorialCompleted');
-  location.reload();
+// Функция для ручного показа туториала (кнопка инфо)
+function showTutorialManually() {
+  console.log('ℹ️ Ручной показ туториала');
+  
+  // Временно сбрасываем слайд на первый
+  currentTutorialSlide = 1;
+  
+  // Показываем туториал без изменения флагов
+  showTutorial();
+  setupTutorialHandlers();
+  
+  // Добавляем специальный обработчик для ручного режима
+  const skipBtn = document.getElementById('skip-tutorial-btn');
+  if (skipBtn) {
+    skipBtn.textContent = 'Закрыть';
+  }
 }
 
-// Функция для сброса всех флагов (для тестирования)
-function resetAllFlags() {
+// Закрыть ручной туториал (без изменения флагов)
+function closeManualTutorial() {
+  console.log('ℹ️ Закрытие ручного туториала');
+  hideTutorial();
+  
+  // Возвращаем текст кнопки
+  const skipBtn = document.getElementById('skip-tutorial-btn');
+  if (skipBtn) {
+    skipBtn.textContent = 'Пропустить';
+  }
+}
+
+// ФУНКЦИИ ДЛЯ РАЗРАБОТКИ/ТЕСТИРОВАНИЯ
+function resetTutorialForTesting() {
+  console.log('🔄 СБРОС ДЛЯ ТЕСТИРОВАНИЯ');
   localStorage.removeItem('tutorialCompleted');
   localStorage.removeItem('userRegistered');
   localStorage.removeItem('userData');
-  localStorage.removeItem('registrationDate');
+  sessionStorage.removeItem('tutorialCompleted');
+  console.log('✅ Все флаги сброшены');
   location.reload();
 }
 
-// Инициализация туториала при загрузке страницы
+// Добавляем в глобальную область
+window.showTutorialManually = showTutorialManually;
+window.resetTutorialForTesting = resetTutorialForTesting;
+
+// Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', function() {
-  // Инициализируем туториал
-  initTutorial();
+  console.log('🚀 DOM загружен');
   
-  // Добавляем функции сброса в глобальную область для тестирования
-  window.resetTutorial = resetTutorial;
-  window.resetAllFlags = resetAllFlags;
+  // Небольшая задержка для стабильности
+  setTimeout(() => {
+    initApp(); // ИЗМЕНЕНО: используем initApp вместо initTutorial
+  }, 200);
   
   // Остальные обработчики...
   setupExportModalHandlers();
