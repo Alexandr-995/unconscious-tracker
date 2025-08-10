@@ -904,7 +904,7 @@ function validateRegistrationForm() {
   return true;
 }
 
-function handleRegistrationComplete() {
+async function handleRegistrationComplete() {
   if (!validateRegistrationForm()) {
     return;
   }
@@ -916,14 +916,21 @@ function handleRegistrationComplete() {
     phone: document.getElementById('reg-phone').value.trim()
   };
   
+  // ДОБАВЛЕНО: Отправляем в Airtable
+  try {
+    console.log('Отправляем пользователя в Airtable:', userData);
+    const result = await addUserToAirtable(userData);
+    if (result) {
+      console.log('✅ Пользователь добавлен в Airtable');
+    }
+  } catch (error) {
+    console.error('❌ Ошибка при добавлении в Airtable:', error);
+  }
+  
   saveUserData(userData);
-  
-  // Дополнительно сохраняем флаг завершения туториала
   localStorage.setItem('tutorialCompleted', 'true');
-  
   hideRegistrationModal();
   
-  // Показываем основное приложение
   setTimeout(() => {
     showMainApp();
   }, 100);
@@ -2141,5 +2148,120 @@ document.addEventListener('DOMContentLoaded', function() {
     importFileInput.addEventListener('change', handleImportFile);
   }
 });
+
+// === AIRTABLE ИНТЕГРАЦИЯ ===
+const AIRTABLE_API_KEY = 'patYeq8Q31awQS47p.6566bc6c7c3c5ac990253b86180b5d566e430f2766c99a363d2e3ce0e22fadf6';
+const AIRTABLE_BASE_ID = 'appTtj0GqImBGulxy';
+const AIRTABLE_TABLE_NAME = 'Трекер бессознательного - Пользователи';
+
+// Функция проверки существует ли пользователь
+async function checkUserExists(email) {
+  try {
+    const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}?filterByFormula={Почта}='${email}'`, {
+      headers: {
+        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await response.json();
+    return data.records.length > 0 ? data.records[0] : null;
+  } catch (error) {
+    console.error('Ошибка проверки пользователя:', error);
+    return null;
+  }
+}
+
+async function addUserToAirtable(userData) {
+  try {
+    const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${encodeURIComponent(AIRTABLE_TABLE_NAME)}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        records: [{
+          fields: {
+            'Почта': userData.email,
+            'Имя': userData.firstName,
+            'Фимилия': userData.lastName,
+            'Номер телефона': userData.phone
+            // ТОЛЬКО ЭТИ 4 ПОЛЯ - они работали!
+          }
+        }]
+      })
+    });
+    
+    console.log('Response status:', response.status);
+    const result = await response.json();
+    console.log('Response data:', result);
+    return result;
+  } catch (error) {
+    console.error('Ошибка добавления пользователя:', error);
+    return null;
+  }
+}
+
+// Функция обновления пользователя
+async function updateUserInAirtable(recordId, updateData) {
+  try {
+    const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}/${recordId}`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        fields: {
+          'Имя': updateData.firstName,        // ИСПРАВЛЕНО
+          'Фимилия': updateData.lastName,     // ИСПРАВЛЕНО (у тебя Фимилия)
+          'Последняя активность': new Date().toISOString()
+        }
+      })
+    });
+    return await response.json();
+  } catch (error) {
+    console.error('Ошибка обновления пользователя:', error);
+    return null;
+  }
+}
+
+// Тестовая функция для проверки Airtable API
+async function testAirtableConnection() {
+  console.log('=== ТЕСТ ПОДКЛЮЧЕНИЯ К AIRTABLE ===');
+  console.log('API Key:', AIRTABLE_API_KEY.substring(0, 20) + '...');
+  console.log('Base ID:', AIRTABLE_BASE_ID);
+  console.log('Table Name:', AIRTABLE_TABLE_NAME);
+  
+  try {
+    const response = await fetch(`https://api.airtable.com/v0/${AIRTABLE_BASE_ID}/${AIRTABLE_TABLE_NAME}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${AIRTABLE_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
+    
+    if (response.ok) {
+      const data = await response.json();
+      console.log('SUCCESS! Data:', data);
+    } else {
+      const errorText = await response.text();
+      console.log('ERROR Response:', errorText);
+    }
+  } catch (error) {
+    console.log('FETCH ERROR:', error);
+  }
+}
+
+// Запускаем тест при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+  setTimeout(testAirtableConnection, 2000);
+});
+
+
 
 
