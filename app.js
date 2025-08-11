@@ -2150,7 +2150,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // === AIRTABLE ИНТЕГРАЦИЯ ===
-const AIRTABLE_API_KEY = process.env.AIRTABLE_API_KEY || 'patYO5YdlZVCtw0VU.c60ca97fca72ec08e23a43515245836625e5fe7f5f14fe5f6b246ecf318fe195';
+const AIRTABLE_API_KEY = 'patYO5YdlZVCtw0VU.c60ca97fca72ec08e23a43515245836625e5fe7f5f14fe5f6b246ecf318fe195';
 const AIRTABLE_BASE_ID = 'appTtj0GqImBGulxy';
 const AIRTABLE_TABLE_NAME = 'Трекер бессознательного - Пользователи';
 
